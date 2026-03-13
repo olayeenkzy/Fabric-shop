@@ -245,7 +245,19 @@ def delete_fabric(id):
 
     return redirect("/dashboard")
 
+@app.route("/reset_sales")
+def reset_sales():
 
+    if session.get("role") != "admin":
+        return redirect("/dashboard")
+
+    db = get_db()
+
+    db.execute("DELETE FROM sales")
+
+    db.commit()
+
+    return redirect("/dashboard")
 # ---------------- RESET STOCK ---------------- #
 
 @app.route("/reset/<int:id>")
