@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.secret_key = "secret123"
 
 DATABASE = "database.db"
+MANAGER_PIN = "0000"
 
 
 def get_db():
@@ -51,7 +52,9 @@ def init_db():
     admin = db.execute("SELECT * FROM users WHERE username='admin'").fetchone()
 
     if not admin:
-        db.execute("INSERT INTO users(username,password,role) VALUES('admin','admin123','admin')")
+        db.execute(
+            "INSERT INTO users(username,password,role) VALUES('admin','admin123','admin')"
+        )
 
     db.commit()
 
@@ -84,6 +87,7 @@ def login():
 
 @app.route("/logout")
 def logout():
+
     session.clear()
     return redirect("/")
 
@@ -164,10 +168,12 @@ def edit_fabric(id):
     return render_template("edit.html", fabric=fabric)
 
 
-@app.route("/delete/<int:id>")
+@app.route("/delete/<int:id>", methods=["POST"])
 def delete_fabric(id):
 
-    if session.get("role") != "admin":
+    pin = request.form["pin"]
+
+    if pin != MANAGER_PIN:
         return redirect("/dashboard")
 
     db = get_db()
@@ -178,10 +184,12 @@ def delete_fabric(id):
     return redirect("/dashboard")
 
 
-@app.route("/reset/<int:id>")
+@app.route("/reset/<int:id>", methods=["POST"])
 def reset_stock(id):
 
-    if session.get("role") != "admin":
+    pin = request.form["pin"]
+
+    if pin != MANAGER_PIN:
         return redirect("/dashboard")
 
     db = get_db()
@@ -248,11 +256,13 @@ def sales_history():
     return render_template("sales.html", sales=sales)
 
 
-@app.route("/delete_sale/<int:id>")
+@app.route("/delete_sale/<int:id>", methods=["POST"])
 def delete_sale(id):
 
-    if session.get("role") != "admin":
-        return redirect("/dashboard")
+    pin = request.form["pin"]
+
+    if pin != MANAGER_PIN:
+        return redirect("/sales_history")
 
     db = get_db()
 
@@ -262,10 +272,12 @@ def delete_sale(id):
     return redirect("/sales_history")
 
 
-@app.route("/reset_sales")
+@app.route("/reset_sales", methods=["POST"])
 def reset_sales():
 
-    if session.get("role") != "admin":
+    pin = request.form["pin"]
+
+    if pin != MANAGER_PIN:
         return redirect("/dashboard")
 
     db = get_db()
